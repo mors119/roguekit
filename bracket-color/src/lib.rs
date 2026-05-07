@@ -43,6 +43,9 @@ pub mod rgb;
 /// Import RGBA color support
 pub mod rgba;
 
+#[cfg(test)]
+pub mod test_utils;
+
 /// Exports the color functions/types in the `prelude` namespace.
 pub mod prelude {
     pub use crate::color_pair::*;
