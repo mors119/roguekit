@@ -475,6 +475,7 @@ mod crossterm_features {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
+    use crate::test_utils::*;
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
@@ -487,54 +488,95 @@ mod tests {
     }
 
     #[test]
-    // Tests that we make an HSV triplet at defaults and it is black.
-    fn convert_olive_to_rgb() {
-        let grey = HSV::from_f32(60.0 / 360.0, 1.0, 0.501_960_8);
-        let rgb = grey.to_rgba(1.0);
-        assert!(f32::abs(rgb.r - 128.0 / 255.0) < f32::EPSILON);
-        assert!(f32::abs(rgb.g - 128.0 / 255.0) < f32::EPSILON);
-        assert!(rgb.b < f32::EPSILON);
-        assert!((rgb.a - 1.0).abs() < f32::EPSILON);
+    fn new_rgba_is_transparent_black() {
+        assert_rgba_eq(RGBA::new(), 0.0, 0.0, 0.0, 0.0);
     }
 
     #[test]
-    // Tests that we make an HSV triplet at defaults and it is black.
-    fn test_red_hex() {
-        let rgb = RGBA::from_hex("#FF0000FF").expect("Invalid hex string");
-        assert!(f32::abs(rgb.r - 1.0) < f32::EPSILON);
-        assert!(rgb.g < f32::EPSILON);
-        assert!(rgb.b < f32::EPSILON);
-        assert!((rgb.a - 1.0).abs() < f32::EPSILON);
+    fn from_f32_clamps_components() {
+        let rgba = RGBA::from_f32(-1.0, 0.5, 2.0, 1.5);
+        assert_rgba_eq(rgba, 0.0, 0.5, 1.0, 1.0);
     }
 
     #[test]
-    // Tests that we make an HSV triplet at defaults and it is black.
-    fn test_green_hex() {
-        let rgb = RGBA::from_hex("#00FF00FF").expect("Invalid hex string");
-        assert!(rgb.r < f32::EPSILON);
-        assert!(f32::abs(rgb.g - 1.0) < f32::EPSILON);
-        assert!(rgb.b < f32::EPSILON);
-        assert!((rgb.a - 1.0).abs() < f32::EPSILON);
+    fn from_u8_converts_components() {
+        let rgba = RGBA::from_u8(255, 128, 0, 64);
+
+        assert_rgba_eq(
+            rgba,
+            1.0,
+            128.0 / 255.0,
+            0.0,
+            64.0 / 255.0,
+        );
     }
 
     #[test]
-    // Tests that we make an HSV triplet at defaults and it is black.
-    fn test_blue_hex() {
-        let rgb = RGBA::from_hex("#0000FFFF").expect("Invalid hex string");
-        assert!(rgb.r < f32::EPSILON);
-        assert!(rgb.g < f32::EPSILON);
-        assert!(f32::abs(rgb.b - 1.0) < f32::EPSILON);
-        assert!((rgb.a - 1.0).abs() < f32::EPSILON);
+    fn parse_hex_colors() {
+        let cases = [
+            ("#FF0000FF", 1.0, 0.0, 0.0, 1.0),
+            ("#00FF00FF", 0.0, 1.0, 0.0, 1.0),
+            ("#0000FFFF", 0.0, 0.0, 1.0, 1.0),
+            ("#80800080", 128.0 / 255.0, 128.0 / 255.0, 0.0, 128.0 / 255.0),
+        ];
+
+        for (hex, r, g, b, a) in cases {
+            let rgba = RGBA::from_hex(hex).expect("valid RGBA hex color");
+            assert_rgba_eq(rgba, r, g, b, a);
+        }
+    }
+
+    #[test]
+    fn parse_hex_rejects_missing_hash() {
+        let err = RGBA::from_hex("FF0000FF").unwrap_err();
+        assert_eq!(err, HtmlColorConversionError::MissingHash);
+    }
+
+    #[test]
+    fn parse_hex_rejects_invalid_length() {
+        let cases = ["", "#FFF", "#FFFFFF", "#FFFFFFFF00"];
+
+        for hex in cases {
+            let err = RGBA::from_hex(hex).unwrap_err();
+            assert_eq!(err, HtmlColorConversionError::InvalidStringLength);
+        }
+    }
+
+    #[test]
+    fn parse_hex_rejects_invalid_character() {
+        let err = RGBA::from_hex("#GG0000FF").unwrap_err();
+        assert_eq!(err, HtmlColorConversionError::InvalidCharacter);
+    }
+
+    #[test]
+    fn to_rgb_drops_alpha() {
+        let rgba = RGBA::from_f32(1.0, 0.5, 0.0, 0.25);
+        let rgb = rgba.to_rgb();
+
+        assert_rgb_eq(rgb, 1.0, 0.5, 0.0);
+    }
+
+    #[test]
+    fn to_greyscale_preserves_alpha() {
+        let rgba = RGBA::from_f32(1.0, 0.0, 0.0, 0.25);
+        let grey = rgba.to_greyscale();
+
+        assert_rgba_eq(grey, 0.2126, 0.2126, 0.2126, 0.25);
+    }
+
+    #[test]
+    fn desaturate_preserves_alpha() {
+        let rgba = RGBA::from_f32(1.0, 0.0, 0.0, 0.25);
+        let desaturated = rgba.desaturate();
+
+        assert_rgba_eq(desaturated, 1.0, 1.0, 1.0, 0.25);
     }
 
     #[test]
     // Tests that we make an HSV triplet at defaults and it is black.
     fn test_blue_named() {
-        let rgb = RGBA::named(BLUE);
-        assert!(rgb.r < f32::EPSILON);
-        assert!(rgb.g < f32::EPSILON);
-        assert!(f32::abs(rgb.b - 1.0) < f32::EPSILON);
-        assert!((rgb.a - 1.0).abs() < f32::EPSILON);
+        let rgba = RGBA::named(BLUE);
+        assert_rgba_eq(rgba, 0.0, 0.0, 1.0, 1.0);
     }
 
     #[test]
