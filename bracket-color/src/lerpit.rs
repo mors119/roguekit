@@ -241,3 +241,78 @@ impl Iterator for AlphaLerp {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::prelude::*;
+    use crate::test_utils::*;
+
+    #[test]
+    fn rgb_lerp_iterates_from_start_to_end() {
+        let start = RGB::from_f32(0.0, 0.0, 0.0);
+        let end = RGB::from_f32(1.0, 1.0, 1.0);
+        let mut lerp = RgbLerp::new(start, end, 2);
+
+        assert_rgb_eq(lerp.next().unwrap(), 0.0, 0.0, 0.0);
+        assert_rgb_eq(lerp.next().unwrap(), 0.5, 0.5, 0.5);
+        assert_rgb_eq(lerp.next().unwrap(), 1.0, 1.0, 1.0);
+        assert!(lerp.next().is_none());
+    }
+
+    #[test]
+    fn hsv_lerp_iterates_from_start_to_end() {
+        let start = HSV::from_f32(0.0, 0.0, 0.0);
+        let end = HSV::from_f32(1.0, 1.0, 1.0);
+        let mut lerp = HsvLerp::new(start, end, 2);
+
+        assert_hsv_eq(lerp.next().unwrap(), 0.0, 0.0, 0.0);
+        assert_hsv_eq(lerp.next().unwrap(), 0.5, 0.5, 0.5);
+        assert_hsv_eq(lerp.next().unwrap(), 1.0, 1.0, 1.0);
+        assert!(lerp.next().is_none());
+    }
+
+    #[test]
+    fn rgba_lerp_iterates_from_start_to_end() {
+        let start = RGBA::from_f32(0.0, 0.0, 0.0, 0.0);
+        let end = RGBA::from_f32(1.0, 1.0, 1.0, 1.0);
+        let mut lerp = RgbaLerp::new(start, end, 2);
+
+        assert_rgba_eq(lerp.next().unwrap(), 0.0, 0.0, 0.0, 0.0);
+        assert_rgba_eq(lerp.next().unwrap(), 0.5, 0.5, 0.5, 0.5);
+        assert_rgba_eq(lerp.next().unwrap(), 1.0, 1.0, 1.0, 1.0);
+        assert!(lerp.next().is_none());
+    }
+
+    #[test]
+    fn alpha_lerp_iterates_alpha_only() {
+        let start = RGBA::from_f32(1.0, 0.0, 0.0, 0.0);
+        let end = RGBA::from_f32(0.0, 1.0, 0.0, 1.0);
+        let mut lerp = AlphaLerp::new(start, end, 2);
+
+        assert_rgba_eq(lerp.next().unwrap(), 1.0, 0.0, 0.0, 0.0);
+        assert_rgba_eq(lerp.next().unwrap(), 1.0, 0.0, 0.0, 0.5);
+        assert_rgba_eq(lerp.next().unwrap(), 1.0, 0.0, 0.0, 1.0);
+        assert!(lerp.next().is_none());
+    }
+
+    #[test]
+    fn rgb_lerp_len_returns_configured_steps() {
+        let lerp = RgbLerp::new(
+            RGB::from_f32(0.0, 0.0, 0.0),
+            RGB::from_f32(1.0, 1.0, 1.0),
+            2,
+        );
+
+        assert_eq!(lerp.len(), 2);
+    }
+
+    #[test]
+    #[should_panic(expected = "Not a usize-convertible integer")]
+    fn rgb_lerp_panics_if_steps_cannot_convert_to_usize() {
+        let _ = RgbLerp::new(
+            RGB::from_f32(0.0, 0.0, 0.0),
+            RGB::from_f32(1.0, 1.0, 1.0),
+            -1,
+        );
+    }
+}
