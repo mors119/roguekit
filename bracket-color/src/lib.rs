@@ -56,4 +56,5 @@ pub mod prelude {
     pub use crate::palette::*;
     pub use crate::rgb::*;
     pub use crate::rgba::*;
+    pub use crate::xpcolor::*;
 }
