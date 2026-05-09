@@ -1,8 +1,8 @@
 use crate::consoles::{scaler::FontScaler, BracketMesh, ScreenScaler, SimpleConsole};
 use bevy::{
+    asset::RenderAssetUsages,
+    mesh::{Indices, PrimitiveTopology},
     prelude::*,
-    render::mesh::{Indices, PrimitiveTopology},
-    sprite::MaterialMesh2dBundle,
 };
 
 use super::SimpleConsoleBackend;
@@ -120,12 +120,15 @@ impl SimpleBackendWithBackground {
                 index_count += 4;
             }
         }
-        let mut mesh = Mesh::new(PrimitiveTopology::TriangleList);
+        let mut mesh = Mesh::new(
+            PrimitiveTopology::TriangleList,
+            RenderAssetUsages::default(),
+        );
         mesh.insert_attribute(Mesh::ATTRIBUTE_POSITION, vertices);
         mesh.insert_attribute(Mesh::ATTRIBUTE_NORMAL, normals);
         mesh.insert_attribute(Mesh::ATTRIBUTE_UV_0, uv);
         mesh.insert_attribute(Mesh::ATTRIBUTE_COLOR, colors);
-        mesh.set_indices(Some(Indices::U32(indices)));
+        mesh.insert_indices(Indices::U32(indices));
         mesh
     }
 }
@@ -143,12 +146,11 @@ impl SimpleConsoleBackend for SimpleBackendWithBackground {
     fn spawn(&self, commands: &mut Commands, material: Handle<ColorMaterial>, idx: usize) {
         if let Some(mesh_handle) = &self.mesh_handle {
             commands
-                .spawn(MaterialMesh2dBundle {
-                    mesh: mesh_handle.clone().into(),
-                    transform: Transform::default(),
-                    material,
-                    ..default()
-                })
+                .spawn((
+                    Mesh2d(mesh_handle.clone()),
+                    MeshMaterial2d(material),
+                    Transform::default(),
+                ))
                 .insert(BracketMesh(idx));
         }
     }

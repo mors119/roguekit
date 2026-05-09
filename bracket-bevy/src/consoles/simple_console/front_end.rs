@@ -7,10 +7,7 @@ use crate::{
     fonts::FontStore,
     BracketContext, FontCharType, SimpleConsoleFeatures,
 };
-use bevy::{
-    prelude::{Assets, Commands, Handle, Mesh},
-    sprite::ColorMaterial,
-};
+use bevy::prelude::{Assets, ColorMaterial, Commands, Handle, Mesh};
 use bracket_color::prelude::RGBA;
 use bracket_geometry::prelude::Point;
 use std::collections::HashSet;

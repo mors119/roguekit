@@ -23,15 +23,15 @@ bracket-embedding = { path = "../bracket-embedding", version = "~0.8" }
 lazy_static = "1.4.0"
 object-pool = "0.5.3"
 glow = { version = "~0.11", optional = true }
-image = { version = "0.24", default-features = false, features = ["jpeg", "png"], optional = true }
-png = { version = "0.17", optional = true }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"], optional = true }
+png = { version = "0.18", optional = true }
 crossterm = { version = "~0.25", optional = true }
 pancurses = { version = "0.17", optional = true }
 ultraviolet = "~0.9"
 parking_lot = { version = "~0.12" }
-ctrlc = { version = "~3.2", optional=true }
+ctrlc = { version = "3.5.2", optional=true }
 anyhow = "~1.0"
-wgpu = { version = "22.1.0", optional=true }
+wgpu = { version = "29.0.3", optional=true }
 pollster = { version = "0.2", optional=true }
 bytemuck = {version = "1.4.0", optional=true }
 
@@ -52,17 +52,17 @@ webgpu = [ "wgpu", "pollster", "image", "bytemuck", "png" ]
 bracket-random = { path = "../bracket-random", version = "~0.8" }
 bracket-pathfinding = { path = "../bracket-pathfinding", version = "~0.8" }
 bracket-noise = { path = "../bracket-noise", version = "~0.8" }
-criterion = "~0.4"
+criterion = "~0.8.2"
 
 [target.wasm32-unknown-unknown.dependencies]
 web-sys = { version = "0.3", features=["console", "Attr", "CanvasRenderingContext2d", "Document", "Element", "Event",
     "EventTarget", "HtmlCanvasElement", "HtmlElement", "HtmlInputElement", "Node", "Text", "Window", "KeyboardEvent",
     "MouseEvent"] }
 wasm-bindgen = "0.2"
-wasm-timer = "0.1.0"
 rand = { version = "0.8", default-features = false }
 console_error_panic_hook = "0.1.6"
 winit = { version = "0.30" }
+web-time = "1.1.0"
 
 [[bench]]
 name = "batching_benchmark"

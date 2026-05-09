@@ -9,10 +9,12 @@ pub struct TerminalGlyph {
 
 impl Default for TerminalGlyph {
     fn default() -> Self {
+        let fg = Color::WHITE.to_srgba();
+        let bg = Color::BLACK.to_srgba();
         Self {
             glyph: 32,
-            foreground: Color::WHITE.as_rgba_f32(),
-            background: Color::BLACK.as_rgba_f32(),
+            foreground: [fg.red, fg.green, fg.blue, fg.alpha],
+            background: [bg.red, bg.green, bg.blue, bg.alpha],
         }
     }
 }

@@ -112,7 +112,7 @@ impl DijkstraMap {
     /// Clears the Dijkstra map. Uses a parallel for each for performance.
     #[cfg(feature = "threaded")]
     pub fn clear(dm: &mut DijkstraMap) {
-        dm.map.par_iter_mut().for_each(|x| *x = MAX);
+        dm.map.par_iter_mut().for_each(|x| *x = f32::MAX);
     }
 
     #[cfg(not(feature = "threaded"))]
@@ -207,7 +207,7 @@ impl DijkstraMap {
         let mut layers: Vec<ParallelDm> = Vec::with_capacity(starts.len());
         for start_chunk in starts.chunks(rayon::current_num_threads()) {
             let mut layer = ParallelDm {
-                map: vec![MAX; mapsize],
+                map: vec![f32::MAX; mapsize],
                 max_depth: dm.max_depth,
                 starts: Vec::new(),
             };

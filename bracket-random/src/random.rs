@@ -1,6 +1,6 @@
 #[cfg(feature = "parsing")]
 use crate::prelude::{parse_dice_string, DiceParseError, DiceType};
-use rand::{Rng, RngCore, SeedableRng};
+use rand::{Rng, RngExt, SeedableRng};
 use rand_xorshift::XorShiftRng;
 
 #[cfg(feature = "serde")]
@@ -57,9 +57,9 @@ impl RandomNumberGenerator {
     /// Returns a random value of whatever type you specify
     pub fn rand<T>(&mut self) -> T
     where
-        rand::distributions::Standard: rand::distributions::Distribution<T>,
+        rand::distr::StandardUniform: rand::distr::Distribution<T>,
     {
-        self.rng.gen::<T>()
+        self.rng.random::<T>()
     }
 
     /// Returns a random value in the specified range, of type specified at the call site.
@@ -67,9 +67,9 @@ impl RandomNumberGenerator {
     /// So range(1,6) will give you numbers from 1 to 5.
     pub fn range<T>(&mut self, min: T, max: T) -> T
     where
-        T: rand::distributions::uniform::SampleUniform + PartialOrd,
+        T: rand::distr::uniform::SampleUniform + PartialOrd,
     {
-        self.rng.gen_range(min..max)
+        self.rng.random_range(min..max)
     }
 
     /// Rolls dice, using the classic 3d6 type of format: n is the number of dice, die_type is the size of the dice.
