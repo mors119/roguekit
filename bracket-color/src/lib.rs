@@ -42,6 +42,8 @@ pub mod palette;
 pub mod rgb;
 /// Import RGBA color support
 pub mod rgba;
+/// Import color wrapper for transportation support
+pub mod xpcolor;
 
 #[cfg(test)]
 pub mod test_utils;

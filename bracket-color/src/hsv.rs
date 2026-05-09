@@ -150,6 +150,7 @@ impl HSV {
 mod tests {
     use crate::prelude::*;
     use crate::test_utils::*;
+    use rstest::rstest;
 
     #[test]
     // Tests that we make an HSV triplet at defaults and it is black.
@@ -166,46 +167,41 @@ mod tests {
         assert_hsv_eq(hsv, 0.5, 0.25, 0.75);
     }
 
-    #[test]
-    fn convert_hsv_to_rgb_primary_colors() {
-        let cases = [
-            (HSV::from_f32(0.0, 1.0, 1.0), 1.0, 0.0, 0.0),
-            (HSV::from_f32(120.0 / 360.0, 1.0, 1.0), 0.0, 1.0, 0.0),
-            (HSV::from_f32(240.0 / 360.0, 1.0, 1.0), 0.0, 0.0, 1.0),
-        ];
-
-        for (hsv, r, g, b) in cases {
-            assert_rgb_eq(hsv.to_rgb(), r, g, b);
-        }
+    #[rstest]
+    #[case(HSV::from_f32(0.0, 1.0, 1.0), 1.0, 0.0, 0.0)]
+    #[case(HSV::from_f32(120.0 / 360.0, 1.0, 1.0), 0.0, 1.0, 0.0)]
+    #[case(HSV::from_f32(240.0 / 360.0, 1.0, 1.0), 0.0, 0.0, 1.0)]
+    fn convert_hsv_to_rgb_primary_colors(
+        #[case] hsv: HSV,
+        #[case] r: f32,
+        #[case] g: f32,
+        #[case] b: f32,
+    ) {
+        assert_rgb_eq(hsv.to_rgb(), r, g, b);
     }
 
-    #[test]
-    fn convert_hsv_to_rgba_preserves_alpha() {
+    #[rstest]
+    #[case(0.0)]
+    #[case(0.5)]
+    #[case(1.0)]
+    fn convert_hsv_to_rgba_preserves_alpha(#[case] alpha: f32) {
         let hsv = HSV::from_f32(0.0, 1.0, 1.0);
-        let transparent = hsv.to_rgba(0.0);
-        let half = hsv.to_rgba(0.5);
-        let opaque = hsv.to_rgba(1.0);
+        let rgba = hsv.to_rgba(alpha);
 
-        assert_rgb_eq(transparent.to_rgb(), 1.0, 0.0, 0.0);
-        assert_rgb_eq(half.to_rgb(), 1.0, 0.0, 0.0);
-        assert_rgb_eq(opaque.to_rgb(), 1.0, 0.0, 0.0);
-
-        assert_approx_eq(transparent.a, 0.0);
-        assert_approx_eq(half.a, 0.5);
-        assert_approx_eq(opaque.a, 1.0);
+        assert_rgba_eq(rgba, 1.0, 0.0, 0.0, alpha);
     }
 
-    #[test]
-    fn convert_hsv_grayscale_to_rgb() {
-        let cases = [
-            (HSV::from_f32(0.0, 0.0, 0.0), 0.0, 0.0, 0.0),
-            (HSV::from_f32(0.0, 0.0, 1.0), 1.0, 1.0, 1.0),
-            (HSV::from_f32(0.0, 0.0, 0.5), 0.5, 0.5, 0.5),
-        ];
-
-        for (hsv, r, g, b) in cases {
-            assert_rgb_eq(hsv.to_rgb(), r, g, b);
-        }
+    #[rstest]
+    #[case(HSV::from_f32(0.0, 0.0, 0.0), 0.0, 0.0, 0.0)]
+    #[case(HSV::from_f32(0.0, 0.0, 1.0), 1.0, 1.0, 1.0)]
+    #[case(HSV::from_f32(0.0, 0.0, 0.5), 0.5, 0.5, 0.5)]
+    fn convert_hsv_grayscale_to_rgb(
+        #[case] hsv: HSV,
+        #[case] r: f32,
+        #[case] g: f32,
+        #[case] b: f32,
+    ) {
+        assert_rgb_eq(hsv.to_rgb(), r, g, b);
     }
 
     #[test]

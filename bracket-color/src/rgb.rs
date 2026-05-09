@@ -1,4 +1,4 @@
-use crate::prelude::{HSV, RGBA};
+use crate::prelude::{XpColor, HSV, RGBA};
 use std::convert::From;
 use std::ops;
 
@@ -298,6 +298,12 @@ impl RGB {
         })
     }
 
+    #[inline]
+    #[must_use]
+    pub fn from_xp(xp: XpColor) -> Self {
+        Self::from_u8(xp.r, xp.g, xp.b)
+    }
+
     /// Converts an RGB triple to an HSV triple.
     #[allow(clippy::many_single_char_names)]
     #[must_use]
@@ -341,6 +347,17 @@ impl RGB {
     #[must_use]
     pub fn to_rgba(&self, alpha: f32) -> RGBA {
         RGBA::from_f32(self.r, self.g, self.b, alpha)
+    }
+
+    #[inline]
+    #[must_use]
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    pub fn to_xp(&self) -> XpColor {
+        XpColor::new(
+            (self.r.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.g.clamp(0.0, 1.0) * 255.0) as u8,
+            (self.b.clamp(0.0, 1.0) * 255.0) as u8,
+        )
     }
 
     /// Applies a quick grayscale conversion to the color
@@ -452,6 +469,7 @@ mod crossterm_features {
 mod tests {
     use crate::prelude::*;
     use crate::test_utils::*;
+    use rstest::rstest;
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
@@ -467,30 +485,25 @@ mod tests {
         assert_rgb_eq(RGB::new(), 0.0, 0.0, 0.0);
     }
 
-    #[test]
-    fn convert_primary_colors_to_hsv() {
-        let cases = [
-            (RGB::from_f32(1.0, 0.0, 0.0), 0.0, 1.0, 1.0),
-            (RGB::from_f32(0.0, 1.0, 0.0), 120.0 / 360.0, 1.0, 1.0),
-            (RGB::from_f32(0.0, 0.0, 1.0), 240.0 / 360.0, 1.0, 1.0),
-        ];
-
-        for (rgb, h, s, v) in cases {
-            assert_hsv_eq(rgb.to_hsv(), h, s, v);
-        }
+    #[rstest]
+    #[case(RGB::from_f32(1.0, 0.0, 0.0), 0.0, 1.0, 1.0)]
+    #[case(RGB::from_f32(0.0, 1.0, 0.0), 120.0 / 360.0, 1.0, 1.0)]
+    #[case(RGB::from_f32(0.0, 0.0, 1.0), 240.0 / 360.0, 1.0, 1.0)]
+    fn convert_primary_colors_to_hsv(
+        #[case] rgb: RGB,
+        #[case] h: f32,
+        #[case] s: f32,
+        #[case] v: f32,
+    ) {
+        assert_hsv_eq(rgb.to_hsv(), h, s, v);
     }
 
-    #[test]
-    fn convert_grayscale_to_hsv() {
-        let cases = [
-            (RGB::from_f32(0.0, 0.0, 0.0), 0.0, 0.0, 0.0),
-            (RGB::from_f32(1.0, 1.0, 1.0), 0.0, 0.0, 1.0),
-            (RGB::from_f32(0.5, 0.5, 0.5), 0.0, 0.0, 0.5),
-        ];
-
-        for (rgb, h, s, v) in cases {
-            assert_hsv_eq(rgb.to_hsv(), h, s, v);
-        }
+    #[rstest]
+    #[case(RGB::from_f32(0.0, 0.0, 0.0), 0.0, 0.0, 0.0)]
+    #[case(RGB::from_f32(1.0, 1.0, 1.0), 0.0, 0.0, 1.0)]
+    #[case(RGB::from_f32(0.5, 0.5, 0.5), 0.0, 0.0, 0.5)]
+    fn convert_grayscale_to_hsv(#[case] rgb: RGB, #[case] h: f32, #[case] s: f32, #[case] v: f32) {
+        assert_hsv_eq(rgb.to_hsv(), h, s, v);
     }
 
     #[test]
@@ -511,19 +524,14 @@ mod tests {
         assert_approx_eq(rgba.a, 0.5);
     }
 
-    #[test]
-    fn parse_hex_colors() {
-        let cases = [
-            ("#FF0000", 1.0, 0.0, 0.0),
-            ("#00FF00", 0.0, 1.0, 0.0),
-            ("#0000FF", 0.0, 0.0, 1.0),
-            ("#808000", 128.0 / 255.0, 128.0 / 255.0, 0.0),
-        ];
-
-        for (hex, r, g, b) in cases {
-            let rgb = RGB::from_hex(hex).expect("valid hex color");
-            assert_rgb_eq(rgb, r, g, b);
-        }
+    #[rstest]
+    #[case("#FF0000", 1.0, 0.0, 0.0)]
+    #[case("#00FF00", 0.0, 1.0, 0.0)]
+    #[case("#0000FF", 0.0, 0.0, 1.0)]
+    #[case("#808000", 128.0 / 255.0, 128.0 / 255.0, 0.0)]
+    fn parse_hex_colors(#[case] hex: &str, #[case] r: f32, #[case] g: f32, #[case] b: f32) {
+        let rgb = RGB::from_hex(hex).expect("valid hex color");
+        assert_rgb_eq(rgb, r, g, b);
     }
 
     #[test]
@@ -532,14 +540,14 @@ mod tests {
         assert_eq!(err, HtmlColorConversionError::MissingHash);
     }
 
-    #[test]
-    fn parse_hex_rejects_invalid_length() {
-        let cases = ["", "#FFF", "#FFFF", "#FFFFFF00"];
-
-        for hex in cases {
-            let err = RGB::from_hex(hex).unwrap_err();
-            assert_eq!(err, HtmlColorConversionError::InvalidStringLength);
-        }
+    #[rstest]
+    #[case("")]
+    #[case("#FFF")]
+    #[case("#FFFF")]
+    #[case("#FFFFFF00")]
+    fn parse_hex_rejects_invalid_length(#[case] hex: &str) {
+        let err = RGB::from_hex(hex).unwrap_err();
+        assert_eq!(err, HtmlColorConversionError::InvalidStringLength);
     }
 
     #[test]

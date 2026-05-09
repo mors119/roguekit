@@ -476,6 +476,7 @@ mod crossterm_features {
 mod tests {
     use crate::prelude::*;
     use crate::test_utils::*;
+    use rstest::rstest;
 
     #[test]
     // Tests that we make an RGB triplet at defaults and it is black.
@@ -501,29 +502,23 @@ mod tests {
     #[test]
     fn from_u8_converts_components() {
         let rgba = RGBA::from_u8(255, 128, 0, 64);
-
         assert_rgba_eq(rgba, 1.0, 128.0 / 255.0, 0.0, 64.0 / 255.0);
     }
 
-    #[test]
-    fn parse_hex_colors() {
-        let cases = [
-            ("#FF0000FF", 1.0, 0.0, 0.0, 1.0),
-            ("#00FF00FF", 0.0, 1.0, 0.0, 1.0),
-            ("#0000FFFF", 0.0, 0.0, 1.0, 1.0),
-            (
-                "#80800080",
-                128.0 / 255.0,
-                128.0 / 255.0,
-                0.0,
-                128.0 / 255.0,
-            ),
-        ];
-
-        for (hex, r, g, b, a) in cases {
-            let rgba = RGBA::from_hex(hex).expect("valid RGBA hex color");
-            assert_rgba_eq(rgba, r, g, b, a);
-        }
+    #[rstest]
+    #[case("#FF0000FF", 1.0, 0.0, 0.0, 1.0)]
+    #[case("#00FF00FF", 0.0, 1.0, 0.0, 1.0)]
+    #[case("#0000FFFF", 0.0, 0.0, 1.0, 1.0)]
+    #[case("#80800080", 128.0 / 255.0, 128.0 / 255.0, 0.0, 128.0 / 255.0)]
+    fn parse_hex_colors(
+        #[case] hex: &str,
+        #[case] r: f32,
+        #[case] g: f32,
+        #[case] b: f32,
+        #[case] a: f32,
+    ) {
+        let rgba = RGBA::from_hex(hex).expect("valid RGBA hex color");
+        assert_rgba_eq(rgba, r, g, b, a);
     }
 
     #[test]
@@ -532,14 +527,14 @@ mod tests {
         assert_eq!(err, HtmlColorConversionError::MissingHash);
     }
 
-    #[test]
-    fn parse_hex_rejects_invalid_length() {
-        let cases = ["", "#FFF", "#FFFFFF", "#FFFFFFFF00"];
-
-        for hex in cases {
-            let err = RGBA::from_hex(hex).unwrap_err();
-            assert_eq!(err, HtmlColorConversionError::InvalidStringLength);
-        }
+    #[rstest]
+    #[case("")]
+    #[case("#FFF")]
+    #[case("#FFFFFF")]
+    #[case("#FFFFFFFF00")]
+    fn parse_hex_rejects_invalid_length(#[case] hex: &str) {
+        let err = RGBA::from_hex(hex).unwrap_err();
+        assert_eq!(err, HtmlColorConversionError::InvalidStringLength);
     }
 
     #[test]
@@ -596,6 +591,7 @@ mod tests {
 
         let l0 = black.lerp_alpha(white, 0.0);
         let l1 = black.lerp_alpha(white, 1.0);
+
         assert!(l0.a < f32::EPSILON);
         assert!((l1.a - 1.0).abs() < f32::EPSILON);
 

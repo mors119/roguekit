@@ -23,9 +23,11 @@ parking_lot = { version = "~0.12", optional = true }
 bevy = { version = "~0.9", optional = true, default-features = false, features = [
     "render",
 ] }
+byteorder = "1"
 
 [dev-dependencies]
 crossterm = "~0.25"
+rstest = "0.26.1"
 
 [[example]]
 name = "colors"
