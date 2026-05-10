@@ -111,25 +111,30 @@ impl RandomNumberGenerator {
 #[cfg(test)]
 mod tests {
     use crate::prelude::RandomNumberGenerator;
+    use rand::RngCore;
 
+    #[cfg(feature = "parsing")]
     #[test]
     fn roll_str_1d6() {
         let mut rng = RandomNumberGenerator::new();
         assert!(rng.roll_str("1d6").is_ok());
     }
 
+    #[cfg(feature = "parsing")]
     #[test]
     fn roll_str_3d6plus1() {
         let mut rng = RandomNumberGenerator::new();
         assert!(rng.roll_str("3d6+1").is_ok());
     }
 
+    #[cfg(feature = "parsing")]
     #[test]
     fn roll_str_3d20minus1() {
         let mut rng = RandomNumberGenerator::new();
         assert!(rng.roll_str("3d20-1").is_ok());
     }
 
+    #[cfg(feature = "parsing")]
     #[test]
     fn roll_str_error() {
         let mut rng = RandomNumberGenerator::new();
@@ -183,10 +188,23 @@ mod tests {
         }
     }
 
+    #[test]
+    fn seeded_rngs_match() {
+        let mut rng1 = RandomNumberGenerator::seeded(1000);
+        let mut rng2 = RandomNumberGenerator::seeded(1000);
+        assert_eq!(rng1.next_u64(), rng2.next_u64());
+    }
+
+    #[test]
+    fn get_rng_exposes_rng_core() {
+        let mut rng1 = RandomNumberGenerator::seeded(1000);
+        let mut rng2 = RandomNumberGenerator::seeded(1000);
+        assert_eq!(rng1.next_u64(), rng2.get_rng().next_u64());
+    }
+
     #[cfg(feature = "serde")]
     #[test]
     fn serialize_rng() {
-        use serde_crate::{Deserialize, Serialize};
         let mut rng = RandomNumberGenerator::seeded(1000);
         let serialized = serde_json::to_string(&rng).unwrap();
         let n = rng.range(0, 100);

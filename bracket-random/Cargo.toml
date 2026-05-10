@@ -34,3 +34,11 @@ serde_json = "~1.0"
 [[bench]]
 name = "dice"
 harness = false
+
+[[example]]
+name = "dicestring"
+required-features = [ "parsing" ]
+
+[[example]]
+name = "distribution"
+required-features = [ "parsing" ]
