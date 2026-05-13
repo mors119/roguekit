@@ -76,6 +76,17 @@ impl Rect {
         }
     }
 
+    /// Creates a rectangle from two opposite corner points.
+    #[must_use]
+    pub fn from_points(p0: Point, p1: Point) -> Rect {
+        Rect {
+            x1: p0.x.min(p1.x),
+            y1: p0.y.min(p1.y),
+            x2: p0.x.max(p1.x),
+            y2: p0.y.max(p1.y),
+        }
+    }
+
     /// Returns a rectangle with ordered coordinates.
     #[must_use]
     pub fn normalized(&self) -> Rect {
@@ -132,6 +143,32 @@ impl Rect {
         } else {
             None
         }
+    }
+
+    /// Returns the top-left corner of the rectangle.
+    #[must_use]
+    pub fn top_left(&self) -> Point {
+        let bounds = self.normalized();
+        Point::new(bounds.x1, bounds.y1)
+    }
+
+    /// Returns the bottom-right corner of the rectangle.
+    #[must_use]
+    pub fn bottom_right(&self) -> Point {
+        let bounds = self.normalized();
+        Point::new(bounds.x2, bounds.y2)
+    }
+
+    /// Returns the rectangle corners in clockwise order, starting at the top-left corner.
+    #[must_use]
+    pub fn corners(&self) -> [Point; 4] {
+        let bounds = self.normalized();
+        [
+            Point::new(bounds.x1, bounds.y1),
+            Point::new(bounds.x2, bounds.y1),
+            Point::new(bounds.x2, bounds.y2),
+            Point::new(bounds.x1, bounds.y2),
+        ]
     }
 
     /// Returns true if this overlaps with other
@@ -224,6 +261,12 @@ mod tests {
     }
 
     #[test]
+    fn test_from_points() {
+        let rect = Rect::from_points(Point::new(10, 20), Point::new(5, 15));
+        assert_eq!(rect, Rect::with_exact(5, 15, 10, 20));
+    }
+
+    #[test]
     fn test_normalized() {
         let rect = Rect::with_exact(10, 20, 5, 15);
         assert_eq!(rect.normalized(), Rect::with_exact(5, 15, 10, 20));
@@ -263,6 +306,32 @@ mod tests {
             Some(Rect::with_exact(5, 5, 10, 10))
         );
         assert_eq!(bounds.intersection(&touching), None);
+    }
+
+    #[test]
+    fn test_top_left() {
+        let rect = Rect::with_exact(10, 20, 5, 15);
+        assert_eq!(rect.top_left(), Point::new(5, 15));
+    }
+
+    #[test]
+    fn test_bottom_right() {
+        let rect = Rect::with_exact(10, 20, 5, 15);
+        assert_eq!(rect.bottom_right(), Point::new(10, 20));
+    }
+
+    #[test]
+    fn test_corners() {
+        let rect = Rect::with_exact(10, 20, 5, 15);
+        assert_eq!(
+            rect.corners(),
+            [
+                Point::new(5, 15),
+                Point::new(10, 15),
+                Point::new(10, 20),
+                Point::new(5, 20),
+            ]
+        );
     }
 
     #[test]
