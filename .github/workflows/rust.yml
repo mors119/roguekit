@@ -14,6 +14,7 @@ permissions:
 jobs:
   check:
     name: ✅ Check (${{ matrix.os }})
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -30,6 +31,7 @@ jobs:
 
   lint:
     name: 🚨 Lint
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -45,6 +47,7 @@ jobs:
 
   test:
     name: 🧪 Test Suite
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -58,6 +61,7 @@ jobs:
 
   unused_dependencies:
     name: 📦 Unused Crates
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -73,6 +77,7 @@ jobs:
 
   security_audit:
     name: 👮 Audit
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -85,6 +90,7 @@ jobs:
 
   wasm_build:
     name: 🕸️ WASM Build
+    if: github.repository == 'utilForever/roguekit'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
